@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     frontend_origin: str = "http://localhost:5173"
 
-    database_url: str = "sqlite:///./rosty.db"
+    database_url: str = "sqlite:///./auth.db"
 
 
 settings = Settings()

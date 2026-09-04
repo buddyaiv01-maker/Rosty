@@ -1,5 +1,5 @@
 import type { Episode, Movie, Season, Subtitle, TVShow } from "../data/types";
-import { LANSTREAM_TOKEN_KEY } from "./authApi";
+import { ROSTY_TOKEN_KEY } from "./authApi";
 import { getSessionId } from "./session";
 
 // Shadows the global `fetch` for the rest of this module only, so every one of
@@ -16,10 +16,10 @@ export function setActiveProfileId(id: number | null): void {
 // Remembers which profile was active across page reloads (state/ProfileContext.tsx
 // restores it on load) — cleared on Switch Profile, logout, and account deletion,
 // at which point the picker is shown again.
-export const LANSTREAM_ACTIVE_PROFILE_KEY = "lanstream_active_profile_id";
+export const ROSTY_ACTIVE_PROFILE_KEY = "rosty_active_profile_id";
 
 function fetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
-  const token = localStorage.getItem(LANSTREAM_TOKEN_KEY);
+  const token = localStorage.getItem(ROSTY_TOKEN_KEY);
   const headers: Record<string, string> = { ...(init.headers as Record<string, string> | undefined) };
   if (token) headers.Authorization = `Bearer ${token}`;
   if (activeProfileId != null) headers["X-Profile-Id"] = String(activeProfileId);
@@ -794,7 +794,7 @@ export async function getAccount(): Promise<{ id: number; email: string | null; 
   return res.json();
 }
 
-/** Deletes this user's LANStream row — watchlist/progress/interaction history cascade with it. */
+/** Deletes this user's Rosty row — watchlist/progress/interaction history cascade with it. */
 export async function deleteAccount(): Promise<void> {
   const res = await fetch("/api/account", { method: "DELETE" });
   if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);

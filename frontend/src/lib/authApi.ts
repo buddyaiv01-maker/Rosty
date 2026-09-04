@@ -1,20 +1,20 @@
-// Client for the bundled Rosty auth service (../../login), which issues the
-// JWTs LANStream's own backend verifies (see backend/app/auth). Mirrors
+// Client for the bundled Auth service (../../login), which issues the
+// JWTs Rosty's own backend verifies (see backend/app/auth). Mirrors
 // login/src/api.js one-to-one — kept separate from lib/api.ts because it talks
 // to a different origin/port.
 
 // Same host the frontend itself was loaded from (localhost when you're on the
 // server machine, the server's LAN IP when another device on the network
 // loaded it that way) — a hardcoded "localhost" would resolve to the other
-// device itself and never reach this server's Rosty instance.
-const ROSTY_BASE_URL = `http://${window.location.hostname}:8001`;
+// device itself and never reach this server's Auth instance.
+const AUTH_BASE_URL = `http://${window.location.hostname}:8001`;
 
-export const LANSTREAM_TOKEN_KEY = "lanstream_token";
+export const ROSTY_TOKEN_KEY = "rosty_token";
 
-export type RostyUser = { id: string; email: string; email_verified: boolean };
+export type AuthUser = { id: string; email: string; email_verified: boolean };
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${ROSTY_BASE_URL}${path}`, {
+  const res = await fetch(`${AUTH_BASE_URL}${path}`, {
     ...options,
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
   });
@@ -77,7 +77,7 @@ export function resetPassword(resetToken: string, newPassword: string) {
 }
 
 export function fetchMe(token: string) {
-  return request<RostyUser>("/auth/me", { headers: { Authorization: `Bearer ${token}` } });
+  return request<AuthUser>("/auth/me", { headers: { Authorization: `Bearer ${token}` } });
 }
 
 export function logout(token: string) {

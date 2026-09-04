@@ -63,7 +63,7 @@ export default function AdminLayout() {
         >
           <IconMenu size={20} />
         </button>
-        <p className="text-sm font-bold">LANStream Admin</p>
+        <p className="text-sm font-bold">Rosty Admin</p>
       </div>
 
       {sidebarOpen && (
@@ -78,18 +78,10 @@ export default function AdminLayout() {
       >
         <div className="mb-6 flex items-center justify-between gap-2 px-2">
           <div className="flex items-center gap-2">
-            <div
-              className="grid h-8 w-8 place-items-center rounded-lg text-sm font-bold"
-              style={{ background: "var(--accent)", color: "white" }}
-            >
-              L
-            </div>
-            <div>
-              <p className="text-sm font-bold leading-none">LANStream</p>
-              <p className="text-[10px] uppercase tracking-wide" style={{ color: "var(--text-dim)" }}>
-                Admin
-              </p>
-            </div>
+            <img src="/rosty-logo.png" alt="Rosty" className="h-6 w-auto" />
+            <p className="text-[10px] uppercase tracking-wide" style={{ color: "var(--text-dim)" }}>
+              Admin
+            </p>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}

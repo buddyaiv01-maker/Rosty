@@ -1,4 +1,4 @@
-# LANStream — Self-Hosted LAN Streaming Platform
+# Rosty — Self-Hosted LAN Streaming Platform
 
 Design doc for V1. Written before any implementation, per the project brief's own instruction.
 
@@ -29,7 +29,7 @@ C:\StreamingServer\                D:\Media\
   logs\
 ```
 
-On the Mini PC this becomes `/opt/lanstream/` + `/mnt/media/` — same app, different paths, read
+On the Mini PC this becomes `/opt/rosty/` + `/mnt/media/` — same app, different paths, read
 from one `.env` / settings row. This is why the backend never hardcodes a path: every file
 operation goes through a `StorageConfig` service that resolves `media_root`, `app_data_root`, and
 `cache_root` from settings (env var at boot, overridable later from the Admin UI, persisted to DB
@@ -78,7 +78,7 @@ so it survives restarts).
 
 ## 4. Database schema (V1)
 
-SQLite/SQLAlchemy, one file at `{app_data_root}/database/lanstream.db`.
+SQLite/SQLAlchemy, one file at `{app_data_root}/database/rosty.db`.
 
 ```
 users
@@ -198,7 +198,7 @@ join, not a string search.
 ## 5. Folder structure
 
 ```
-LANStream/
+Rosty/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py                 # FastAPI app, mounts routers + static frontend
@@ -308,15 +308,15 @@ Server-rendered-data, client-driven React admin at `/admin`, gated by the `admin
 
 | | Development (now) | Mini PC (later) |
 |---|---|---|
-| App data | `C:\StreamingServer\` | `/opt/lanstream/` |
+| App data | `C:\StreamingServer\` | `/opt/rosty/` |
 | Media | `D:\Media\` | `/mnt/media/` (external SSD/DAS) |
 | DB | SQLite file | SQLite file (or Postgres, same Alembic migrations) |
 | Start command | `python run.py` | `systemd` unit running the same `run.py` |
 | Config change | none in code — two path values in `settings` |
 
 Nothing in `backend/app` reads an OS-specific path; every path comes from `StorageConfig`, which
-reads `settings` at boot and falls back to environment variables (`LANSTREAM_MEDIA_ROOT`,
-`LANSTREAM_APP_DATA_ROOT`) if the DB doesn't have them yet (first-run bootstrap).
+reads `settings` at boot and falls back to environment variables (`ROSTY_MEDIA_ROOT`,
+`ROSTY_APP_DATA_ROOT`) if the DB doesn't have them yet (first-run bootstrap).
 
 ## 11. V1 roadmap (build order)
 

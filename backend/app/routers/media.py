@@ -37,7 +37,7 @@ def proxy_image(url: str = Query(...)) -> Response:
     if parsed.scheme not in ("http", "https") or parsed.hostname not in ALLOWED_PROXY_HOSTS:
         raise HTTPException(status_code=400, detail="URL host not allowed")
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "LANStream/1.0"})
+        req = urllib.request.Request(url, headers={"User-Agent": "Rosty/1.0"})
         with urllib.request.urlopen(req, timeout=15) as resp:
             content_type = resp.headers.get("Content-Type", "image/jpeg")
             data = resp.read()

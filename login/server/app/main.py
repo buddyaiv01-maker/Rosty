@@ -7,11 +7,11 @@ from .routers import auth
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Rosty Auth API")
+app = FastAPI(title="Auth API")
 
-# Bundled into LANStream, a LAN appliance reachable from any device on the
+# Bundled into Rosty, a LAN appliance reachable from any device on the
 # network at the server's LAN IP — that IP (and the Origin header LAN devices
-# send) isn't known ahead of time, so this mirrors LANStream's own backend
+# send) isn't known ahead of time, so this mirrors Rosty's own backend
 # CORS policy (wide open) rather than pinning to settings.frontend_origin.
 # Safe to open up: auth uses a Bearer token, not cookies, so allow_credentials
 # isn't needed and dropping it is what makes a wildcard origin valid at all.

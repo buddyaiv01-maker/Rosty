@@ -5,7 +5,7 @@
 
 import { getOmdbApiKeys, getOmdbKeyRotationIndex, setOmdbKeyRotationIndex } from "./localSettings";
 
-const CACHE_PREFIX = "lanstream.omdbCache.v1.";
+const CACHE_PREFIX = "rosty.omdbCache.v1.";
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export type OmdbResult = {

@@ -2,7 +2,7 @@
 // interaction_events into "one sitting" for future sequence-aware recommendations.
 // See RECOMMENDATIONS.md.
 
-const SESSION_ID_KEY = "lanstream.sessionId";
+const SESSION_ID_KEY = "rosty.sessionId";
 
 export function getSessionId(): string {
   let id = sessionStorage.getItem(SESSION_ID_KEY);

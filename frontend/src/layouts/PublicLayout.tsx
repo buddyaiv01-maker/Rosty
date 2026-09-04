@@ -236,13 +236,8 @@ export default function PublicLayout() {
           backdropFilter: scrolled ? "blur(16px)" : "none",
         }}
       >
-        <Link
-          to="/"
-          className="shrink-0 text-lg font-extrabold"
-          style={{ fontFamily: "var(--r-font-heading)", letterSpacing: "var(--r-tracking-heading)", color: "var(--r-accent)" }}
-        >
-          <span className="sm:hidden">L</span>
-          <span className="hidden sm:inline">LANStream</span>
+        <Link to="/" className="shrink-0">
+          <img src="/rosty-logo.png" alt="Rosty" className="h-6 w-auto" />
         </Link>
 
         <div className="flex min-w-0 flex-1 justify-center">

@@ -1,9 +1,9 @@
 // Frontend-only persistence until the backend Settings/DB layer exists (Phase 1/6).
 // Once real endpoints land, these get replaced by calls to /api/settings.
 
-const OMDB_KEYS_STORAGE = "lanstream.omdbApiKeys";
-const OMDB_KEY_STORAGE_LEGACY = "lanstream.omdbApiKey";
-const OMDB_KEY_INDEX_STORAGE = "lanstream.omdbApiKeyIndex";
+const OMDB_KEYS_STORAGE = "rosty.omdbApiKeys";
+const OMDB_KEY_STORAGE_LEGACY = "rosty.omdbApiKey";
+const OMDB_KEY_INDEX_STORAGE = "rosty.omdbApiKeyIndex";
 
 export const MAX_OMDB_KEYS = 5;
 

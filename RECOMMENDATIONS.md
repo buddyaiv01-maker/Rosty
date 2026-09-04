@@ -1,4 +1,4 @@
-# LANStream — Recommendation System (future work)
+# Rosty — Recommendation System (future work)
 
 Not in scope for V1 (see [DESIGN.md](DESIGN.md)). This doc exists so that when the time comes,
 the data has already been collecting for months instead of starting from zero. It captures the
@@ -15,7 +15,7 @@ endpoints; the alternative is re-collecting six months of behavior from scratch.
 
 ## What already exists (as of this doc)
 
-LANStream's schema already covers more of this than it looks like at first glance:
+Rosty's schema already covers more of this than it looks like at first glance:
 
 | Need | Table | Status |
 |---|---|---|
@@ -123,7 +123,7 @@ optional later convenience (precomputed start/end), not a prerequisite.
 The original design sketch this doc is based on suggested tracking device type and geolocation.
 Both are cut here on purpose:
 
-- **Device type** — LANStream is one app on one LAN; there's no meaningful "mobile vs. TV app"
+- **Device type** — Rosty is one app on one LAN; there's no meaningful "mobile vs. TV app"
   behavioral split to learn from the way a multi-platform streaming service would have.
 - **Location** — this is a self-hosted appliance on a home network. There is no legitimate
   recommendation use for it, and collecting it would be pure privacy liability for zero benefit.
@@ -177,7 +177,7 @@ a training pipeline (rough rule of thumb: thousands of events, not hundreds). At
   than real-time inference — there's no latency requirement here that justifies an online model
   server on a home LAN box.
 - Prototype against MovieLens 1M first to validate the pipeline mechanics before pointing it at
-  LANStream's own (much smaller) real dataset.
+  Rosty's own (much smaller) real dataset.
 
 ### Phase R5 — surfacing it
 A `/api/recommendations` endpoint + a "Recommended for You" row on Home, same shape as the

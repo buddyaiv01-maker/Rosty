@@ -1,4 +1,4 @@
-# Migrating LANStream to a Mini PC (Phase 12)
+# Migrating Rosty to a Mini PC (Phase 12)
 
 Moves the exact same codebase you've been running in dev onto a dedicated
 always-on Linux box. Nothing about the app changes — same three services, same
@@ -25,11 +25,11 @@ ffmpeg -version         # any recent build
 Matches what PHASES.md's Phase 12 entry calls for:
 
 ```
-/opt/lanstream/          # the cloned repo (code)
+/opt/rosty/               # the cloned repo (code)
 /mnt/media/              # external HDD/DAS — your actual movie/TV files
 ```
 
-`/opt/lanstream` holds the code and the app's own database/cache (small,
+`/opt/rosty` holds the code and the app's own database/cache (small,
 fast, must always be available). `/mnt/media` is the large media library —
 can be a separate physical drive.
 
@@ -39,10 +39,10 @@ Once you have this repo on GitHub (see the version-control section below),
 on the Mini PC:
 
 ```bash
-sudo mkdir -p /opt/lanstream
-sudo chown $USER:$USER /opt/lanstream
-git clone <your-repo-url> /opt/lanstream
-cd /opt/lanstream
+sudo mkdir -p /opt/rosty
+sudo chown $USER:$USER /opt/rosty
+git clone <your-repo-url> /opt/rosty
+cd /opt/rosty
 ```
 
 If you're not using git yet, `scp`/`rsync` the project folder over instead —
@@ -85,32 +85,32 @@ From your current Windows machine, copy:
 - `backend/data/` → will become the new box's `backend/data/` (databases,
   cache, thumbnails — your movie/show catalog, accounts, watch history)
 - `backend/media/` (or wherever your actual files live) → `/mnt/media/`
-- `login/server/rosty.db` → the new box's `login/server/rosty.db` (real
+- `login/server/auth.db` → the new box's `login/server/auth.db` (real
   accounts — skip this if you'd rather everyone re-register fresh)
 
 Any reasonably fast transfer method works (external USB drive, `rsync` over
 the LAN, etc.) — this is likely the slowest step if your media library is
 large.
 
-## 6. Set up the Rosty auth service
+## 6. Set up the Auth service
 
 ```bash
-cd /opt/lanstream/login/server
+cd /opt/rosty/login/server
 python3.12 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 cp .env.example .env
 ```
 
 Edit `.env` with real values — **reuse the same `JWT_SECRET`** you're using
-today if you copied `rosty.db` over (existing sessions/tokens only stay
+today if you copied `auth.db` over (existing sessions/tokens only stay
 valid if the secret matches; a new random one invalidates every account's
 old address, though they can still just log in again). Also reuse the same
 SMTP credentials so email OTP keeps working.
 
-## 7. Set up the LANStream backend
+## 7. Set up the Rosty backend
 
 ```bash
-cd /opt/lanstream/backend
+cd /opt/rosty/backend
 python3.12 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 cp .env.example .env
@@ -118,10 +118,10 @@ cp .env.example .env
 
 Edit `.env`:
 
-- `ROSTY_JWT_SECRET` — **must exactly match** `JWT_SECRET` from step 6
-- `LANSTREAM_MEDIA_ROOT=/mnt/media`
-- `LANSTREAM_APP_DATA_ROOT=/opt/lanstream/backend/data` (or leave the
-  default `./data` if you'll always run from `/opt/lanstream/backend`)
+- `AUTH_JWT_SECRET` — **must exactly match** `JWT_SECRET` from step 6
+- `ROSTY_MEDIA_ROOT=/mnt/media`
+- `ROSTY_APP_DATA_ROOT=/opt/rosty/backend/data` (or leave the
+  default `./data` if you'll always run from `/opt/rosty/backend`)
 - `ADMIN_EMAILS` — same admin allow-list as before
 
 First run applies migrations automatically:
@@ -139,7 +139,7 @@ Dev mode isn't what you want on an always-on box — build it once and serve
 the static output:
 
 ```bash
-cd /opt/lanstream/frontend
+cd /opt/rosty/frontend
 npm install
 npm run build   # outputs to frontend/dist/
 ```
@@ -151,7 +151,7 @@ sudo npm install -g serve
 serve -s dist -l 5185
 ```
 
-The built frontend still expects `/api` to be reachable and Rosty at
+The built frontend still expects `/api` to be reachable and Auth at
 `window.location.hostname:8001` — same assumptions as dev, just now backed
 by real running services instead of Vite's proxy.
 
@@ -159,17 +159,17 @@ by real running services instead of Vite's proxy.
 
 So they start on boot and restart if they crash. Create three unit files:
 
-`/etc/systemd/system/lanstream-rosty.service`:
+`/etc/systemd/system/rosty-auth.service`:
 
 ```ini
 [Unit]
-Description=LANStream - Rosty auth service
+Description=Rosty - Auth service
 After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/lanstream/login/server
-ExecStart=/opt/lanstream/login/server/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8001
+WorkingDirectory=/opt/rosty/login/server
+ExecStart=/opt/rosty/login/server/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8001
 Restart=on-failure
 User=%i
 
@@ -177,17 +177,17 @@ User=%i
 WantedBy=multi-user.target
 ```
 
-`/etc/systemd/system/lanstream-backend.service`:
+`/etc/systemd/system/rosty-backend.service`:
 
 ```ini
 [Unit]
-Description=LANStream backend
-After=network.target lanstream-rosty.service
+Description=Rosty backend
+After=network.target rosty-auth.service
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/lanstream/backend
-ExecStart=/opt/lanstream/backend/.venv/bin/python run.py
+WorkingDirectory=/opt/rosty/backend
+ExecStart=/opt/rosty/backend/.venv/bin/python run.py
 Restart=on-failure
 User=%i
 
@@ -195,16 +195,16 @@ User=%i
 WantedBy=multi-user.target
 ```
 
-`/etc/systemd/system/lanstream-frontend.service`:
+`/etc/systemd/system/rosty-frontend.service`:
 
 ```ini
 [Unit]
-Description=LANStream frontend (static)
+Description=Rosty frontend (static)
 After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/lanstream/frontend
+WorkingDirectory=/opt/rosty/frontend
 ExecStart=/usr/bin/serve -s dist -l 5185
 Restart=on-failure
 User=%i
@@ -217,8 +217,8 @@ Replace `%i` with your actual Linux username (or set `User=` directly), then:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now lanstream-rosty lanstream-backend lanstream-frontend
-sudo systemctl status lanstream-backend   # confirm it's active (running)
+sudo systemctl enable --now rosty-auth rosty-backend rosty-frontend
+sudo systemctl status rosty-backend   # confirm it's active (running)
 ```
 
 ## 10. Firewall
@@ -228,7 +228,7 @@ If `ufw` (or similar) is active, open the three ports to the LAN:
 ```bash
 sudo ufw allow 5185/tcp   # frontend
 sudo ufw allow 8080/tcp   # backend API
-sudo ufw allow 8001/tcp   # Rosty auth
+sudo ufw allow 8001/tcp   # Auth service
 ```
 
 ## 11. Verify from another device
@@ -248,7 +248,7 @@ on the box itself.
 
 Not required for the move itself. If you outgrow SQLite later, both
 `backend/alembic` and `login/server`'s migrations are database-agnostic —
-point `DATABASE_URL` (Rosty) / the backend's DB URL at a Postgres instance
+point `DATABASE_URL` (Auth) / the backend's DB URL at a Postgres instance
 instead and re-run the same migration commands against it. Data itself
 doesn't migrate automatically; you'd need a one-off export/import pass
 (e.g. `pgloader` for a SQLite → Postgres copy) if moving an existing library

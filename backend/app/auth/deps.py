@@ -4,7 +4,7 @@ from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from app.auth.security import decode_rosty_access_token, fetch_rosty_email
+from app.auth.security import decode_auth_access_token, fetch_auth_email
 from app.database import get_db
 from app.models import Profile, User
 
@@ -31,19 +31,19 @@ def get_current_user(
     if credentials is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
-    subject = decode_rosty_access_token(credentials.credentials)
+    subject = decode_auth_access_token(credentials.credentials)
     if subject is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
 
     user = db.query(User).filter(User.auth_subject == subject).one_or_none()
     if user is None:
-        # First time this Rosty account has been seen here — provision a local
+        # First time this Auth account has been seen here — provision a local
         # row. Role is decided once, now, against ADMIN_EMAILS: changing that
         # list later doesn't retroactively promote/demote an already-provisioned
         # account (deleting and re-registering the account re-syncs it).
-        # username has no meaning of its own once Rosty owns identity; the Rosty
+        # username has no meaning of its own once Auth owns identity; the Auth
         # subject id is unique and doubles as one.
-        email = fetch_rosty_email(credentials.credentials)
+        email = fetch_auth_email(credentials.credentials)
         role = "admin" if _is_admin_email(email) else "user"
         user = User(username=subject, password_hash="", role=role, auth_subject=subject, email=email)
         db.add(user)

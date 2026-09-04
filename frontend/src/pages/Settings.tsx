@@ -73,7 +73,7 @@ export default function Settings() {
           </p>
 
           <div className="flex flex-col gap-4">
-            <Field label="Application Data Root" hint="Database, cache, thumbnails, logs — set via LANSTREAM_APP_DATA_ROOT before first boot, not editable here">
+            <Field label="Application Data Root" hint="Database, cache, thumbnails, logs — set via ROSTY_APP_DATA_ROOT before first boot, not editable here">
               <TextInput value={loading ? "Loading…" : appDataRoot} disabled />
             </Field>
             <Field label="Media Root" hint="Contains Movies/ and TV Shows/ subfolders">

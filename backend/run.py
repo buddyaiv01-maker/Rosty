@@ -34,7 +34,7 @@ def main() -> None:
     finally:
         db.close()
 
-    print(f"LANStream starting on http://{host}:{port}  (local: http://localhost:{port})")
+    print(f"Rosty starting on http://{host}:{port}  (local: http://localhost:{port})")
     uvicorn.run("app.main:app", host=host, port=port, reload=False)
 
 

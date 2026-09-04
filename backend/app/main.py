@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="LANStream", lifespan=lifespan)
+app = FastAPI(title="Rosty", lifespan=lifespan)
 
 # LAN appliance, not a public service — any device on the local network may
 # call the API from the CMS/player frontend, so origin is not restricted.
@@ -42,7 +42,7 @@ app.add_middleware(
 # mutating route, PUT /settings, gets its own require_admin — see system.py),
 # and streaming/media are hit directly by <video>/<img>/<track> tags which
 # can't attach an Authorization header. Everything else requires a logged-in
-# Rosty account (see app/auth/deps.py); movies/tv_shows also allow any logged-in
+# Auth account (see app/auth/deps.py); movies/tv_shows also allow any logged-in
 # user to read but restrict writes to admins via require_admin on those routes.
 app.include_router(system.router, prefix="/api")
 app.include_router(streaming.router, prefix="/api")

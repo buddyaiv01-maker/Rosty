@@ -18,6 +18,7 @@ export function Hero({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [errorVariant, setErrorVariant] = useState<"error" | "info">("error");
   const [submitting, setSubmitting] = useState(false);
   const isRegister = mode === "register";
 
@@ -46,9 +47,11 @@ export function Hero({
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong.";
-      if (isRegister && /already have an account/i.test(message)) {
+      const isExistingAccount = isRegister && /already have an account/i.test(message);
+      if (isExistingAccount) {
         setMode("login");
       }
+      setErrorVariant(isExistingAccount ? "info" : "error");
       setError(message);
     } finally {
       setSubmitting(false);
@@ -81,7 +84,7 @@ export function Hero({
           />
         )}
 
-        <AuthError>{error}</AuthError>
+        <AuthError variant={errorVariant}>{error}</AuthError>
 
         <AuthButton type="submit" disabled={submitting}>
           {submitting ? "Please wait…" : isRegister ? "Get Started" : "Sign In"}

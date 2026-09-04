@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import * as api from "../lib/api";
-import { LANSTREAM_ACTIVE_PROFILE_KEY, setActiveProfileId } from "../lib/api";
+import { ROSTY_ACTIVE_PROFILE_KEY, setActiveProfileId } from "../lib/api";
 import { useAuth } from "./AuthContext";
 
 export type Profile = { id: number; name: string; avatarKey: string };
@@ -52,7 +52,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       const found = current.find((p) => p.id === id) ?? null;
       setActiveProfile(found);
       setActiveProfileId(found?.id ?? null);
-      if (found) localStorage.setItem(LANSTREAM_ACTIVE_PROFILE_KEY, String(found.id));
+      if (found) localStorage.setItem(ROSTY_ACTIVE_PROFILE_KEY, String(found.id));
       return current;
     });
   }, []);
@@ -63,7 +63,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   // picker is only ever shown when neither applies.
   useEffect(() => {
     if (loading || activeProfile || profiles.length === 0) return;
-    const remembered = Number(localStorage.getItem(LANSTREAM_ACTIVE_PROFILE_KEY));
+    const remembered = Number(localStorage.getItem(ROSTY_ACTIVE_PROFILE_KEY));
     if (remembered && profiles.some((p) => p.id === remembered)) {
       selectProfile(remembered);
     } else if (profiles.length === 1) {
@@ -74,7 +74,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const switchProfile = useCallback(() => {
     setActiveProfile(null);
     setActiveProfileId(null);
-    localStorage.removeItem(LANSTREAM_ACTIVE_PROFILE_KEY);
+    localStorage.removeItem(ROSTY_ACTIVE_PROFILE_KEY);
   }, []);
 
   const createProfile = useCallback(async (name: string, avatarKey: string) => {
@@ -100,7 +100,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       if (activeProfile?.id === id) {
         setActiveProfile(null);
         setActiveProfileId(null);
-        localStorage.removeItem(LANSTREAM_ACTIVE_PROFILE_KEY);
+        localStorage.removeItem(ROSTY_ACTIVE_PROFILE_KEY);
       }
     },
     [activeProfile],

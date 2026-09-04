@@ -18,11 +18,11 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[str] = mapped_column(String(16), nullable=False, default="user")  # 'admin' | 'user'
-    # Rosty (the bundled auth service, see login/) issues JWTs whose `sub` claim is
+    # Auth (the bundled auth service, see login/) issues JWTs whose `sub` claim is
     # its own string user id. This links that id to a local user row the first time
-    # someone with that Rosty account is seen here — see app/auth/deps.py.
+    # someone with that Auth account is seen here — see app/auth/deps.py.
     auth_subject: Mapped[str | None] = mapped_column(String(64), unique=True, index=True)
-    # Fetched from Rosty once at JIT-provisioning time (not on every request —
+    # Fetched from Auth once at JIT-provisioning time (not on every request —
     # see app/auth/deps.py) so role can be decided against ADMIN_EMAILS.
     email: Mapped[str | None] = mapped_column(String(255), unique=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)

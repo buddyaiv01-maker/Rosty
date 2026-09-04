@@ -23,7 +23,7 @@ from app.models import Setting
 
 # Loaded here (module import time, before anything else in the app reads
 # os.environ) so a backend/.env file works the same as real process env vars —
-# needed for ROSTY_JWT_SECRET, see app/auth/security.py.
+# needed for AUTH_JWT_SECRET, see app/auth/security.py.
 load_dotenv()
 
 DEFAULT_APP_DATA_ROOT = "./data"
@@ -32,19 +32,19 @@ DEFAULT_HOST = "0.0.0.0"
 DEFAULT_PORT = "8080"
 
 _env_defaults = {
-    "media_root": os.environ.get("LANSTREAM_MEDIA_ROOT", DEFAULT_MEDIA_ROOT),
-    "server_host": os.environ.get("LANSTREAM_HOST", DEFAULT_HOST),
-    "server_port": os.environ.get("LANSTREAM_PORT", DEFAULT_PORT),
+    "media_root": os.environ.get("ROSTY_MEDIA_ROOT", DEFAULT_MEDIA_ROOT),
+    "server_host": os.environ.get("ROSTY_HOST", DEFAULT_HOST),
+    "server_port": os.environ.get("ROSTY_PORT", DEFAULT_PORT),
 }
 
 
 def app_data_root() -> Path:
     """Bootstrap-only path. Never DB-backed — see module docstring."""
-    return Path(os.environ.get("LANSTREAM_APP_DATA_ROOT", DEFAULT_APP_DATA_ROOT)).resolve()
+    return Path(os.environ.get("ROSTY_APP_DATA_ROOT", DEFAULT_APP_DATA_ROOT)).resolve()
 
 
 def database_path() -> Path:
-    return app_data_root() / "database" / "lanstream.db"
+    return app_data_root() / "database" / "rosty.db"
 
 
 class StorageConfig:

@@ -181,9 +181,6 @@ export default function Home() {
               <p className="mb-2 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--r-text-muted)" }}>
                 Start Watching
               </p>
-              <p className="text-sm font-extrabold uppercase tracking-wide" style={{ fontFamily: "var(--r-font-heading)", color: "var(--r-accent)" }}>
-                LANStream
-              </p>
               <h1
                 className="mt-1 text-4xl font-extrabold uppercase leading-[0.95] sm:text-6xl"
                 style={{ fontFamily: "var(--r-font-heading)", letterSpacing: "var(--r-tracking-heading)", color: "var(--r-text)" }}

@@ -78,10 +78,10 @@ export function AuthLink(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   );
 }
 
-export function AuthError({ children }: { children: ReactNode }) {
+export function AuthError({ children, variant = "error" }: { children: ReactNode; variant?: "error" | "info" }) {
   if (!children) return null;
   return (
-    <p className="text-xs" style={{ color: "var(--danger)" }} aria-live="polite">
+    <p className="text-center text-xs" style={{ color: variant === "info" ? "var(--success)" : "var(--danger)" }} aria-live="polite">
       {children}
     </p>
   );

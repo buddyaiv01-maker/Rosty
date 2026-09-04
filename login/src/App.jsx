@@ -9,7 +9,7 @@ import WelcomeOverlay from "./components/WelcomeOverlay.jsx";
 import { fetchMe, logout as apiLogout } from "./api.js";
 import "./App.css";
 
-const TOKEN_KEY = "rosty_token";
+const TOKEN_KEY = "auth_token";
 
 export default function App() {
   const [step, setStep] = useState("hero");

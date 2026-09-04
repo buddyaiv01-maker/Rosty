@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { LANSTREAM_ACTIVE_PROFILE_KEY, deleteAccount as deleteLanstreamAccount, getAccount } from "../lib/api";
-import { LANSTREAM_TOKEN_KEY, deleteAccount as deleteRostyAccount, fetchMe, logout as apiLogout } from "../lib/authApi";
+import { ROSTY_ACTIVE_PROFILE_KEY, deleteAccount as deleteRostyAccount, getAccount } from "../lib/api";
+import { ROSTY_TOKEN_KEY, deleteAccount as deleteAuthAccount, fetchMe, logout as apiLogout } from "../lib/authApi";
 
 type Session = { token: string; email: string; role: "admin" | "user" } | null;
 
@@ -19,22 +19,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem(LANSTREAM_TOKEN_KEY);
+    const token = localStorage.getItem(ROSTY_TOKEN_KEY);
     if (!token) {
       setCheckingSession(false);
       return;
     }
     fetchMe(token)
-      // getAccount() hits LANStream's own backend, which JIT-provisions the
+      // getAccount() hits Rosty's own backend, which JIT-provisions the
       // local user row (and decides its role) on first contact — this is
-      // that first contact for a freshly verified Rosty session.
+      // that first contact for a freshly verified Auth session.
       .then((user) => getAccount().then((account) => setSession({ token, email: user.email, role: account.role })))
-      .catch(() => localStorage.removeItem(LANSTREAM_TOKEN_KEY))
+      .catch(() => localStorage.removeItem(ROSTY_TOKEN_KEY))
       .finally(() => setCheckingSession(false));
   }, []);
 
   const enterSession = (token: string, email: string) => {
-    localStorage.setItem(LANSTREAM_TOKEN_KEY, token);
+    localStorage.setItem(ROSTY_TOKEN_KEY, token);
     getAccount()
       .then((account) => setSession({ token, email, role: account.role }))
       .catch(() => setSession({ token, email, role: "user" }));
@@ -42,8 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     const token = session?.token;
-    localStorage.removeItem(LANSTREAM_TOKEN_KEY);
-    localStorage.removeItem(LANSTREAM_ACTIVE_PROFILE_KEY);
+    localStorage.removeItem(ROSTY_TOKEN_KEY);
+    localStorage.removeItem(ROSTY_ACTIVE_PROFILE_KEY);
     setSession(null);
     if (token) apiLogout(token).catch(() => {});
   };
@@ -51,13 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const deleteAccount = async () => {
     const token = session?.token;
     if (!token) return;
-    // LANStream row first (needs the token to still resolve to a user there);
-    // Rosty's own record second. If the first throws, the caller sees the
+    // Rosty row first (needs the token to still resolve to a user there);
+    // Auth's own record second. If the first throws, the caller sees the
     // error and nothing is deleted from either side.
-    await deleteLanstreamAccount();
-    await deleteRostyAccount(token).catch(() => {});
-    localStorage.removeItem(LANSTREAM_TOKEN_KEY);
-    localStorage.removeItem(LANSTREAM_ACTIVE_PROFILE_KEY);
+    await deleteRostyAccount();
+    await deleteAuthAccount(token).catch(() => {});
+    localStorage.removeItem(ROSTY_TOKEN_KEY);
+    localStorage.removeItem(ROSTY_ACTIVE_PROFILE_KEY);
     setSession(null);
   };
 

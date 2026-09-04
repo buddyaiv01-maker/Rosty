@@ -1,7 +1,11 @@
 import smtplib
 from email.message import EmailMessage
+from pathlib import Path
 
 from .config import settings
+
+LOGO_PATH = Path(__file__).resolve().parent.parent.parent / "public" / "rosty-logo.png"
+LOGO_CID = "rosty-logo"
 
 
 def _send(to_email: str, subject: str, text_body: str, html_body: str) -> None:
@@ -11,6 +15,10 @@ def _send(to_email: str, subject: str, text_body: str, html_body: str) -> None:
     msg["To"] = to_email
     msg.set_content(text_body)
     msg.add_alternative(html_body, subtype="html")
+
+    if LOGO_PATH.exists():
+        html_part = msg.get_payload()[1]
+        html_part.add_related(LOGO_PATH.read_bytes(), "image", "png", cid=f"<{LOGO_CID}>")
 
     with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
         server.starttls()
@@ -32,6 +40,7 @@ def send_otp_email(to_email: str, code: str, purpose: str) -> None:
 
     html_body = f"""
     <div style="font-family: -apple-system, Segoe UI, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0b0d14; color: #f5f6fa; border-radius: 16px;">
+      <img src="cid:{LOGO_CID}" alt="Rosty" style="height: 32px; width: auto; margin: 0 0 20px;" />
       <h2 style="margin: 0 0 8px; color: #f5f6fa;">{heading}</h2>
       <p style="color: rgba(245,246,250,0.7); margin: 0 0 24px;">{blurb}</p>
       <div style="font-size: 32px; font-weight: 700; letter-spacing: 8px; text-align: center; padding: 20px; background: rgba(255,255,255,0.06); border-radius: 12px; color: #4fadfe;">

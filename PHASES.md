@@ -1,4 +1,4 @@
-# LANStream — Build Phases
+# Rosty — Build Phases
 
 Status legend: ✅ done · 🔧 in progress · ⬜ not started
 
@@ -12,7 +12,7 @@ Get a bare FastAPI process booting with the data layer wired end to end, nothing
 - Python deps (`requirements.txt`)
 - `StorageConfig`: env-var bootstrap + DB-backed settings, resolves `media_root` / `app_data_root` / `cache_root`
 - SQLAlchemy models for the full schema (movies, tv_shows, seasons, episodes, subtitles, genres, people, users, playback_progress, media_scan_log, settings)
-- `database.py`: engine/session, SQLite at `{app_data_root}/database/lanstream.db`
+- `database.py`: engine/session, SQLite at `{app_data_root}/database/rosty.db`
 - Alembic wired to that DB + models, baseline migration generated
 - `run.py`: creates data dirs, runs `alembic upgrade head`, starts uvicorn
 - `/health` endpoint responds; `python run.py` → `http://localhost:8080/health` works
@@ -20,12 +20,12 @@ Get a bare FastAPI process booting with the data layer wired end to end, nothing
 **Exit criteria:** server boots, DB file + tables exist, one endpoint responds.
 
 ## Phase 2 — Auth & Profiles ✅
-Real login gate, role-based admin access, and Netflix-style profiles — built by bundling in a separate standalone auth service ("Rosty") rather than writing LANStream's own signup/OTP/password flow from scratch.
-- `login/` — a copy of the standalone Rosty auth app (FastAPI + email OTP + JWT), run as its own process; LANStream's backend never talks to it at request time, just verifies its JWTs locally with a shared secret (`ROSTY_JWT_SECRET`)
-- JIT user provisioning: the first request from a new Rosty account creates a matching local `users` row (`app/auth/deps.py`), linked by `auth_subject`
+Real login gate, role-based admin access, and Netflix-style profiles — built by bundling in a separate standalone auth service ("Auth") rather than writing Rosty's own signup/OTP/password flow from scratch.
+- `login/` — a copy of the standalone Auth app (FastAPI + email OTP + JWT), run as its own process; Rosty's backend never talks to it at request time, just verifies its JWTs locally with a shared secret (`AUTH_JWT_SECRET`)
+- JIT user provisioning: the first request from a new Auth account creates a matching local `users` row (`app/auth/deps.py`), linked by `auth_subject`
 - `ADMIN_EMAILS` allow-list decides `role` (`admin`/`user`) once at that provisioning step; `require_admin` gates all CMS mutations (movie/show CRUD, uploads, subtitles, scan, settings) while browsing/reading stays open to any logged-in account
 - Full login UI ported into the frontend (`pages/auth/`) — register/verify/set-password/login/forgot-password — gating the whole app behind `AuthGate`
-- Account deletion (self-service, both LANStream and Rosty sides) from Settings and the public nav
+- Account deletion (self-service, both Rosty and Auth sides) from Settings and the public nav
 - Profiles: up to 5 per account, each with a name + a chosen SVG avatar (`pages/profiles/`), watch data (progress/watchlist/interaction events) scoped per-`profile_id` instead of per-account. A normal account must create its first profile before entering; the picker reappears every login once 2+ exist; admin accounts get one silent, hidden profile and never see any of this UI.
 
 **Exit criteria:** unauthenticated requests to admin routes are rejected; login returns a usable session. — **Verified**: registered real accounts end to end through the browser (OTP → password → session), confirmed `/api/movies` 401s with no token and 403s for a non-admin token on write routes, confirmed the allow-listed admin email gets `role: "admin"` and write access, confirmed per-profile watchlist isolation (two profiles under one account, one item added, only visible under the profile that added it), and confirmed the admin bypass still lets playback/watchlist work via its auto-created hidden profile.
@@ -105,7 +105,7 @@ Basic title search across movies + shows, surfaced in the public UI nav.
 *(This one was actually already built — appears to have landed naturally as part of Phase 8's public UI work — just never got marked done here.)*
 
 ## Phase 12 — Mini PC Migration ⬜
-- `docs/MINI_PC_DEPLOYMENT.md`: Linux setup, systemd unit, path layout (`/opt/lanstream`, `/mnt/media`)
+- `docs/MINI_PC_DEPLOYMENT.md`: Linux setup, systemd unit, path layout (`/opt/rosty`, `/mnt/media`)
 - Verify: same DB (or migrate SQLite → Postgres using the existing Alembic migrations), same app code, only `settings`/env values change
 - Confirm external HDD/DAS mount survives reboot and is what `media_root` points to
 
