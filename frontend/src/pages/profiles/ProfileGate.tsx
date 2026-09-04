@@ -76,9 +76,12 @@ function WhoIsWatching() {
       className="flex min-h-screen flex-col items-center justify-center gap-8 px-4"
       style={{
         background: "var(--bg)",
-        backgroundImage: "linear-gradient(color-mix(in srgb, var(--bg) 55%, transparent), var(--bg)), url(/cinema-bg.png)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundImage:
+          "radial-gradient(ellipse 70% 50% at center, color-mix(in srgb, var(--accent) 35%, transparent), transparent 70%)",
+        backgroundSize: "220% 160%",
+        backgroundPosition: "50% 0%",
+        backgroundRepeat: "no-repeat",
+        animation: "ambient-drift 14s ease-in-out infinite",
       }}
     >
       <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>

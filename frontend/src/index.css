@@ -41,6 +41,15 @@ body {
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+@keyframes ambient-drift {
+  0%, 100% { background-position: 35% 0%; }
+  50% { background-position: 65% 0%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}
+
 /* Plain CSS rather than Tailwind's translate-x-* utility: that utility composes
    `translate: var(--tw-translate-x) var(--tw-translate-y)`, and --tw-translate-y is
    only ever defined by a translate-y-* utility — with none present it stays
