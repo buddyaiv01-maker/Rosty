@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+:root {
+  color-scheme: dark;
+  --bg: #0b0d10;
+  --surface: #14171b;
+  --surface-alt: #1b1f24;
+  --surface-hover: #21262c;
+  --border: #262b31;
+  --text: #f3f4f6;
+  --text-muted: #8b929c;
+  --text-dim: #5b6470;
+  --accent: #6366f1;
+  --accent-hover: #7577f5;
+  --success: #22c55e;
+  --warning: #eab308;
+  --danger: #ef4444;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #2a2f36; border-radius: 999px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Plain CSS rather than Tailwind's translate-x-* utility: that utility composes
+   `translate: var(--tw-translate-x) var(--tw-translate-y)`, and --tw-translate-y is
+   only ever defined by a translate-y-* utility — with none present it stays
+   unresolved and the whole declaration is dropped, so the sidebar never actually
+   moves. Gated to mobile widths only, so it can never affect the desktop layout. */
+@media (max-width: 767px) {
+  .admin-sidebar-hidden { transform: translateX(-100%); }
+}
+
+input, select, textarea {
+  font-family: inherit;
+}

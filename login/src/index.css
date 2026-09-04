@@ -1,0 +1,32 @@
+:root {
+  color-scheme: dark;
+  --bg-base: #0b0d14;
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.28);
+  --glass-highlight: rgba(255, 255, 255, 0.55);
+  --text-primary: #f5f6fa;
+  --text-secondary: rgba(245, 246, 250, 0.65);
+  --accent: #4fadfe;
+  --accent-2: #fb8603;
+  --danger: #ff8a8a;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  overflow: hidden;
+}

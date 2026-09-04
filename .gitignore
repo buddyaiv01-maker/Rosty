@@ -1,0 +1,37 @@
+# Root-level safety net — each subproject (backend/, frontend/, login/,
+# login/server/) also has its own .gitignore for tooling-specific paths.
+# These are broad backstops so nothing sensitive or generated slips in from
+# a new subproject that doesn't have its own .gitignore yet.
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# App data / media (large, user-generated — never belongs in git)
+backend/data/
+backend/media/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
