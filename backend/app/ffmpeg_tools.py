@@ -49,7 +49,7 @@ def ensure_hls(input_path: Path, output_dir: Path) -> Path:
         "-f", "hls",
         str(playlist),
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False)
     if result.returncode != 0 or not playlist.exists():
         raise RuntimeError(f"ffmpeg transcode failed: {result.stderr[-2000:]}")
     return playlist

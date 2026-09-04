@@ -10,6 +10,7 @@ from ..deps import get_current_user
 from ..email_utils import send_otp_email
 from ..models import EmailOtp, OtpPurpose, User
 from ..otp import generate_otp, hash_otp, verify_otp
+from ..rate_limit import rate_limit
 from ..schemas import (
     ForgotPasswordRequest,
     LoginRequest,
@@ -96,7 +97,11 @@ def _check_otp(db: Session, user: User, purpose: OtpPurpose, code: str) -> Email
     return otp
 
 
-@router.post("/register", response_model=MessageResponse)
+_register_rate_limit = rate_limit("register", max_requests=5, window_seconds=3600)
+_login_rate_limit = rate_limit("login", max_requests=10, window_seconds=900)
+
+
+@router.post("/register", response_model=MessageResponse, dependencies=[Depends(_register_rate_limit)])
 def register(payload: RegisterRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     existing = db.execute(select(User).where(User.email == payload.email)).scalars().first()
 
@@ -154,7 +159,7 @@ def resend_otp(payload: ResendOtpRequest, background_tasks: BackgroundTasks, db:
     return {"message": "A new verification code has been sent."}
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=TokenResponse, dependencies=[Depends(_login_rate_limit)])
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
     generic_error = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password.")
 

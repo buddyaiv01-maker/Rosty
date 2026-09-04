@@ -7,7 +7,13 @@ from sqlalchemy.orm import Session
 from app.auth.deps import require_admin
 from app.config import StorageConfig, app_data_root, database_path
 from app.database import get_db
-from app.schemas.system import DiskUsageResponse, DriveUsage, HealthResponse, SettingsResponse, SettingsUpdate
+from app.schemas.system import (
+    DiskUsageResponse,
+    DriveUsage,
+    HealthResponse,
+    SettingsResponse,
+    SettingsUpdate,
+)
 
 router = APIRouter(tags=["system"])
 

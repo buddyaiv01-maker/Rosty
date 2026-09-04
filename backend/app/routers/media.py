@@ -42,7 +42,7 @@ def proxy_image(url: str = Query(...)) -> Response:
             content_type = resp.headers.get("Content-Type", "image/jpeg")
             data = resp.read()
     except urllib.error.URLError as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch image: {e}")
+        raise HTTPException(status_code=502, detail=f"Failed to fetch image: {e}") from e
     if not content_type.startswith("image/"):
         raise HTTPException(status_code=502, detail="Remote URL did not return an image")
     return Response(content=data, media_type=content_type)

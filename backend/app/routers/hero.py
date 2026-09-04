@@ -1,7 +1,6 @@
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
-
-from fastapi import APIRouter, Depends, HTTPException
 
 from app.auth.deps import require_admin
 from app.database import get_db

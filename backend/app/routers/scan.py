@@ -7,7 +7,7 @@ call from the CMS review queue.
 """
 
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,9 +16,25 @@ from sqlalchemy.orm import Session
 
 from app.config import StorageConfig
 from app.database import get_db
-from app.models import Episode, Genre, MediaScanLog, Movie, MovieCast, MovieGenre, Person, Season, TVShow
+from app.models import (
+    Episode,
+    Genre,
+    MediaScanLog,
+    Movie,
+    MovieCast,
+    MovieGenre,
+    Person,
+    Season,
+    TVShow,
+)
 from app.schemas.movie import MovieRead
-from app.schemas.scan import EpisodeCandidate, ImportEpisode, ImportMovie, MovieCandidate, ScanResult
+from app.schemas.scan import (
+    EpisodeCandidate,
+    ImportEpisode,
+    ImportMovie,
+    MovieCandidate,
+    ScanResult,
+)
 from app.schemas.tv_show import EpisodeRead
 
 router = APIRouter(prefix="/scan", tags=["scan"])
@@ -101,7 +117,7 @@ def run_scan(db: Session = Depends(get_db)) -> ScanResult:
     db.commit()
 
     return ScanResult(
-        scanned_at=datetime.utcnow().isoformat(),
+        scanned_at=datetime.now(timezone.utc).isoformat(),
         movies=movie_candidates,
         episodes=episode_candidates,
     )
@@ -150,7 +166,10 @@ def import_movie(payload: ImportMovie, db: Session = Depends(get_db)) -> MovieRe
     db.commit()
     db.refresh(movie)
 
-    from app.routers.movies import _get_movie, _to_read  # local import avoids a circular import at module load
+    from app.routers.movies import (  # local import avoids a circular import at module load
+        _get_movie,
+        _to_read,
+    )
 
     return _to_read(_get_movie(db, movie.id))
 

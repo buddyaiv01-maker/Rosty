@@ -20,7 +20,13 @@ from app.schemas.tv_show import (
     ShowSummary,
     ShowUpdate,
 )
-from app.storage_files import delete_if_exists, delete_subtitle_file, remove_dir_if_empty, sanitize_folder_name, save_upload
+from app.storage_files import (
+    delete_if_exists,
+    delete_subtitle_file,
+    remove_dir_if_empty,
+    sanitize_folder_name,
+    save_upload,
+)
 
 router = APIRouter(tags=["tv-shows"])
 # Router-level auth (any logged-in user) already covers reads; writes need admin too.

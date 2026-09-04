@@ -10,7 +10,13 @@ from app.database import get_db
 from app.models import Genre, Movie, MovieCast, MovieGenre, Person
 from app.schemas.movie import MovieCreate, MovieRead, MovieUpdate
 from app.schemas.subtitle import SubtitleRead
-from app.storage_files import delete_if_exists, delete_subtitle_file, remove_dir_if_empty, sanitize_folder_name, save_upload
+from app.storage_files import (
+    delete_if_exists,
+    delete_subtitle_file,
+    remove_dir_if_empty,
+    sanitize_folder_name,
+    save_upload,
+)
 
 router = APIRouter(prefix="/movies", tags=["movies"])
 # Router-level auth (any logged-in user) already covers reads; writes need admin too.
@@ -149,7 +155,7 @@ def _movie_dir(storage: StorageConfig, movie: Movie) -> tuple[str, Path]:
 def upload_poster(movie_id: int, file: UploadFile, db: Session = Depends(get_db)) -> MovieRead:
     movie = _get_movie(db, movie_id)
     storage = StorageConfig(db)
-    folder, dir_path = _movie_dir(storage, movie)
+    _folder, dir_path = _movie_dir(storage, movie)
     ext = (file.filename or "poster").rsplit(".", 1)[-1] if "." in (file.filename or "") else "jpg"
     saved = save_upload(file, dir_path, f"poster.{ext}")
     movie.poster_path = str(saved.relative_to(storage.media_root))
@@ -161,7 +167,7 @@ def upload_poster(movie_id: int, file: UploadFile, db: Session = Depends(get_db)
 def upload_backdrop(movie_id: int, file: UploadFile, db: Session = Depends(get_db)) -> MovieRead:
     movie = _get_movie(db, movie_id)
     storage = StorageConfig(db)
-    folder, dir_path = _movie_dir(storage, movie)
+    _folder, dir_path = _movie_dir(storage, movie)
     ext = (file.filename or "backdrop").rsplit(".", 1)[-1] if "." in (file.filename or "") else "jpg"
     saved = save_upload(file, dir_path, f"backdrop.{ext}")
     movie.backdrop_path = str(saved.relative_to(storage.media_root))
@@ -173,7 +179,7 @@ def upload_backdrop(movie_id: int, file: UploadFile, db: Session = Depends(get_d
 def upload_video(movie_id: int, file: UploadFile, db: Session = Depends(get_db)) -> MovieRead:
     movie = _get_movie(db, movie_id)
     storage = StorageConfig(db)
-    folder, dir_path = _movie_dir(storage, movie)
+    _folder, dir_path = _movie_dir(storage, movie)
     saved = save_upload(file, dir_path, file.filename)
     movie.video_path = str(saved.relative_to(storage.media_root))
     db.commit()

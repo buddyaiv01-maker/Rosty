@@ -55,7 +55,9 @@ class Season(Base):
     season_number: Mapped[int] = mapped_column(Integer, nullable=False)
 
     show: Mapped["TVShow"] = relationship(back_populates="seasons")
-    episodes: Mapped[list["Episode"]] = relationship(back_populates="season", cascade="all, delete-orphan", order_by="Episode.episode_number")
+    episodes: Mapped[list["Episode"]] = relationship(
+        back_populates="season", cascade="all, delete-orphan", order_by="Episode.episode_number"
+    )
 
 
 class Episode(Base, TimestampMixin):

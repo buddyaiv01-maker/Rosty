@@ -1,9 +1,8 @@
 from datetime import datetime
 
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
-
-from fastapi import APIRouter, Depends, HTTPException
 
 from app.auth.deps import get_active_profile
 from app.database import get_db
