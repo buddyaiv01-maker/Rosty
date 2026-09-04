@@ -1,4 +1,7 @@
+import os
 import shutil
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 from fastapi import APIRouter, Depends
@@ -11,6 +14,7 @@ from app.schemas.system import (
     DiskUsageResponse,
     DriveUsage,
     HealthResponse,
+    ServiceStatusResponse,
     SettingsResponse,
     SettingsUpdate,
 )
@@ -72,4 +76,25 @@ def update_settings(payload: SettingsUpdate, db: Session = Depends(get_db)) -> S
         media_root=str(cfg.media_root),
         server_host=cfg.server_host,
         server_port=cfg.server_port,
+    )
+
+
+def _auth_service_up() -> bool:
+    base_url = os.environ.get("AUTH_BASE_URL", "http://localhost:8001")
+    req = urllib.request.Request(f"{base_url}/health")
+    try:
+        with urllib.request.urlopen(req, timeout=3) as res:
+            return res.status == 200
+    except (urllib.error.URLError, TimeoutError):
+        return False
+
+
+@router.get("/service-status", response_model=ServiceStatusResponse, dependencies=[Depends(require_admin)])
+def service_status() -> ServiceStatusResponse:
+    # Answering this request at all proves the backend itself is up.
+    return ServiceStatusResponse(
+        backend=True,
+        auth_service=_auth_service_up(),
+        auth_restart_hint_dev="cd login/server && uvicorn app.main:app --host 0.0.0.0 --port 8001",
+        auth_restart_hint_systemd="sudo systemctl restart rosty-auth",
     )

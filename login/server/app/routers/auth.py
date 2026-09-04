@@ -97,8 +97,8 @@ def _check_otp(db: Session, user: User, purpose: OtpPurpose, code: str) -> Email
     return otp
 
 
-_register_rate_limit = rate_limit("register", max_requests=5, window_seconds=3600)
-_login_rate_limit = rate_limit("login", max_requests=10, window_seconds=900)
+_register_rate_limit = rate_limit("register")
+_login_rate_limit = rate_limit("login")
 
 
 @router.post("/register", response_model=MessageResponse, dependencies=[Depends(_register_rate_limit)])

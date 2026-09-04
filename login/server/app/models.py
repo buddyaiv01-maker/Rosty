@@ -46,3 +46,14 @@ class EmailOtp(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
 
     user: Mapped["User"] = relationship(back_populates="otps")
+
+
+class Setting(Base):
+    """Admin-editable key/value config, mirroring backend/app/models/system.py's
+    Setting — currently only holds rate-limit thresholds (see app/rate_limit.py),
+    set via the backend's /api/rate-limit-config (see app/routers/internal.py)."""
+
+    __tablename__ = "settings"
+
+    key: Mapped[str] = mapped_column(String, primary_key=True)
+    value: Mapped[str | None] = mapped_column(String)

@@ -16,6 +16,11 @@ export default function DeleteAccountButton({ variant = "card" }: { variant?: "c
 
   if (!session) return null;
 
+  // Admin accounts never use the viewer-facing watchlist/playback features
+  // (they get one hidden, never-shown profile — see ProfileGate) — saying
+  // otherwise in the confirmation text would just be confusing/inaccurate.
+  const isAdmin = session.role === "admin";
+
   const openConfirm = () => {
     setError(null);
     setConfirming(true);
@@ -42,8 +47,9 @@ export default function DeleteAccountButton({ variant = "card" }: { variant?: "c
             Delete Account
           </p>
           <p className="mb-4 text-xs" style={{ color: "var(--text-dim)" }}>
-            Permanently deletes <strong style={{ color: "var(--text-muted)" }}>{session.email}</strong> — its watchlist,
-            playback history, and login credentials. This can't be undone.
+            Permanently deletes <strong style={{ color: "var(--text-muted)" }}>{session.email}</strong>
+            {isAdmin ? " and its login credentials" : " — its watchlist, playback history, and login credentials"}.
+            This can't be undone.
           </p>
           <button
             onClick={openConfirm}
@@ -72,8 +78,9 @@ export default function DeleteAccountButton({ variant = "card" }: { variant?: "c
       {confirming && (
         <Modal title="Delete account?" onClose={() => (deleting ? undefined : setConfirming(false))} width="max-w-md">
           <p className="mb-5 text-sm" style={{ color: "var(--text-muted)" }}>
-            This permanently deletes <strong style={{ color: "var(--text)" }}>{session.email}</strong> and everything
-            tied to it — watchlist, playback progress, and the account itself. There's no undo.
+            This permanently deletes <strong style={{ color: "var(--text)" }}>{session.email}</strong>
+            {isAdmin ? " and its login credentials" : " and everything tied to it — watchlist, playback progress, and the account itself"}.
+            There's no undo.
           </p>
           {error && variant === "link" && (
             <p className="mb-3 text-xs font-semibold" style={{ color: "var(--danger)" }}>

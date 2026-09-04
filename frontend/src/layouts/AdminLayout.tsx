@@ -50,28 +50,13 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="flex min-h-screen" style={{ background: "var(--bg)" }}>
-      <div
-        className="sticky top-0 z-30 flex items-center gap-3 border-b px-4 py-3 md:hidden"
-        style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-      >
-        <button
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Open menu"
-          className="grid h-8 w-8 place-items-center rounded-lg"
-          style={{ color: "var(--text-muted)" }}
-        >
-          <IconMenu size={20} />
-        </button>
-        <p className="text-sm font-bold">Rosty Admin</p>
-      </div>
-
+    <div className="flex h-screen overflow-hidden" style={{ background: "var(--bg)" }}>
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setSidebarOpen(false)} aria-hidden="true" />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col gap-1 border-r p-4 transition-transform duration-200 md:static md:z-auto md:w-60 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col gap-1 overflow-y-auto border-r p-4 transition-transform duration-200 md:static md:z-auto md:h-screen md:w-60 ${
           sidebarOpen ? "" : "admin-sidebar-hidden"
         }`}
         style={{ borderColor: "var(--border)", background: "var(--surface)" }}
@@ -134,9 +119,26 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1">
-        <Outlet />
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div
+          className="flex items-center gap-3 border-b px-4 py-3 md:hidden"
+          style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+        >
+          <button
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open menu"
+            className="grid h-8 w-8 place-items-center rounded-lg"
+            style={{ color: "var(--text-muted)" }}
+          >
+            <IconMenu size={20} />
+          </button>
+          <p className="text-sm font-bold">Rosty Admin</p>
+        </div>
+
+        <main className="min-w-0 flex-1 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

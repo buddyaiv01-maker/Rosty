@@ -29,3 +29,12 @@ class DriveUsage(BaseModel):
 class DiskUsageResponse(BaseModel):
     media: DriveUsage
     app_data: DriveUsage
+
+
+class ServiceStatusResponse(BaseModel):
+    backend: bool
+    auth_service: bool
+    # Shown by the frontend when auth_service is down — dev vs. systemd
+    # deployments restart it differently, see docs/MINI_PC_DEPLOYMENT.md.
+    auth_restart_hint_dev: str
+    auth_restart_hint_systemd: str

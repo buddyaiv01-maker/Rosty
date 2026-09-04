@@ -3,15 +3,25 @@ import PageHeader from "../components/PageHeader";
 import DeleteAccountButton from "../components/DeleteAccountButton";
 import { Field, TextInput } from "../components/FormField";
 import { IconCheck, IconClose } from "../components/Icons";
+import Modal from "../components/Modal";
 import { MAX_OMDB_KEYS, getOmdbApiKeys, setOmdbApiKeys } from "../lib/localSettings";
 import * as api from "../lib/api";
+import { useAuth } from "../state/AuthContext";
 
 export default function Settings() {
+  const { session } = useAuth();
   const [mediaRoot, setMediaRoot] = useState("");
   const [appDataRoot, setAppDataRoot] = useState("");
   const [host, setHost] = useState("");
   const [port, setPort] = useState("");
   const [omdbKeys, setOmdbKeys] = useState<string[]>([""]);
+  const [adminEmails, setAdminEmails] = useState<api.AdminEmailEntry[]>([]);
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [addingAdminEmail, setAddingAdminEmail] = useState(false);
+  const [adminEmailError, setAdminEmailError] = useState<string | null>(null);
+  const [adminEmailMessage, setAdminEmailMessage] = useState<string | null>(null);
+  const [removeConfirmEntry, setRemoveConfirmEntry] = useState<api.AdminEmailEntry | null>(null);
+  const [removingAdminEmail, setRemovingAdminEmail] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -22,17 +32,54 @@ export default function Settings() {
     const stored = getOmdbApiKeys();
     setOmdbKeys(stored.length > 0 ? stored : [""]);
 
-    Promise.all([api.getSettings(), api.getHealth()])
-      .then(([settings, health]) => {
+    Promise.all([api.getSettings(), api.getHealth(), api.getAdminEmails()])
+      .then(([settings, health, emails]) => {
         setMediaRoot(settings.mediaRoot);
         setHost(settings.serverHost);
         setPort(String(settings.serverPort));
         setAppDataRoot(health.appDataRoot);
+        setAdminEmails(emails);
         setLoadError(null);
       })
       .catch((err) => setLoadError(err instanceof Error ? err.message : String(err)))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleAddAdminEmail = async () => {
+    const email = newAdminEmail.trim();
+    if (!email) return;
+    setAddingAdminEmail(true);
+    setAdminEmailError(null);
+    setAdminEmailMessage(null);
+    try {
+      const result = await api.addAdminEmail(email);
+      setAdminEmails(result.emails);
+      setAdminEmailMessage(result.message);
+      setNewAdminEmail("");
+    } catch (err) {
+      setAdminEmailError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setAddingAdminEmail(false);
+    }
+  };
+
+  const confirmRemoveAdminEmail = async () => {
+    const entry = removeConfirmEntry;
+    if (!entry) return;
+    setRemovingAdminEmail(true);
+    setAdminEmailError(null);
+    setAdminEmailMessage(null);
+    try {
+      const result = await api.removeAdminEmail(entry.email);
+      setAdminEmails(result.emails);
+      setAdminEmailMessage(result.message);
+      setRemoveConfirmEntry(null);
+    } catch (err) {
+      setAdminEmailError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRemovingAdminEmail(false);
+    }
+  };
 
   const updateOmdbKey = (index: number, value: string) => setOmdbKeys((keys) => keys.map((k, i) => (i === index ? value : k)));
   const removeOmdbKey = (index: number) => setOmdbKeys((keys) => keys.filter((_, i) => i !== index));
@@ -137,6 +184,136 @@ export default function Settings() {
             <button onClick={addOmdbKey} className="mt-2 text-xs font-semibold" style={{ color: "var(--accent)" }}>
               + Add another key
             </button>
+          )}
+        </div>
+
+        <div className="mt-4 rounded-xl border p-5" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <p className="mb-1 text-sm font-bold">Admin Access</p>
+          <p className="mb-4 text-xs" style={{ color: "var(--text-dim)" }}>
+            Add an email to grant admin access. If that email hasn't registered yet, it becomes
+            admin the first time it registers and verifies. If it already has an account, adding it
+            here promotes that account to admin immediately — and removing it here revokes admin
+            access immediately, turning it back into a regular account.
+          </p>
+
+          <div className="flex flex-col gap-2">
+            {adminEmails.map((entry) => {
+              const isSelf = session?.email?.toLowerCase() === entry.email.toLowerCase();
+              return (
+                <div
+                  key={entry.email}
+                  className="flex items-center justify-between gap-2 rounded-lg px-3 py-2"
+                  style={{ background: "var(--surface-alt)" }}
+                >
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="truncate text-sm">{entry.email}</span>
+                    <span
+                      className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                      style={
+                        entry.status === "admin"
+                          ? { background: "color-mix(in srgb, var(--success) 20%, transparent)", color: "var(--success)" }
+                          : { background: "var(--surface)", color: "var(--text-dim)" }
+                      }
+                    >
+                      {entry.status === "admin" ? "Admin" : "Pending"}
+                    </span>
+                    {isSelf && (
+                      <span className="shrink-0 text-[10px]" style={{ color: "var(--text-dim)" }}>
+                        (you)
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setRemoveConfirmEntry(entry)}
+                    disabled={isSelf}
+                    className="shrink-0 rounded-lg p-1.5 disabled:cursor-not-allowed disabled:opacity-30"
+                    style={{ color: "var(--danger)" }}
+                    aria-label={isSelf ? "You can't remove your own admin access" : `Remove ${entry.email} from admin access`}
+                    title={isSelf ? "You can't remove your own admin access" : undefined}
+                  >
+                    <IconClose size={14} />
+                  </button>
+                </div>
+              );
+            })}
+            {adminEmails.length === 0 && !loading && (
+              <p className="text-xs" style={{ color: "var(--text-dim)" }}>
+                No one has admin access yet.
+              </p>
+            )}
+          </div>
+
+          <div className="mt-3 flex gap-2">
+            <div className="flex-1">
+              <TextInput
+                type="email"
+                placeholder="someone@example.com"
+                value={newAdminEmail}
+                onChange={(e) => setNewAdminEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddAdminEmail()}
+                disabled={loading || addingAdminEmail}
+              />
+            </div>
+            <button
+              onClick={handleAddAdminEmail}
+              disabled={loading || addingAdminEmail || !newAdminEmail.trim()}
+              className="shrink-0 rounded-lg px-4 text-sm font-semibold disabled:opacity-40"
+              style={{ background: "var(--accent)", color: "white" }}
+            >
+              {addingAdminEmail ? "Adding…" : "Add"}
+            </button>
+          </div>
+          {adminEmailMessage && (
+            <p className="mt-2 text-xs font-semibold" style={{ color: "var(--success)" }}>
+              {adminEmailMessage}
+            </p>
+          )}
+          {adminEmailError && (
+            <p className="mt-2 text-xs font-semibold" style={{ color: "var(--danger)" }}>
+              {adminEmailError}
+            </p>
+          )}
+
+          {removeConfirmEntry && (
+            <Modal
+              title={removeConfirmEntry.status === "admin" ? "Revoke admin access?" : "Remove from admin list?"}
+              onClose={() => (removingAdminEmail ? undefined : setRemoveConfirmEntry(null))}
+              width="max-w-md"
+            >
+              <p className="mb-5 text-sm" style={{ color: "var(--text-muted)" }}>
+                {removeConfirmEntry.status === "admin" ? (
+                  <>
+                    <strong style={{ color: "var(--text)" }}>{removeConfirmEntry.email}</strong> currently has admin
+                    access. Removing them revokes it immediately — they become a regular account
+                    (browse/watch only). Their account itself is not deleted.
+                  </>
+                ) : (
+                  <>
+                    <strong style={{ color: "var(--text)" }}>{removeConfirmEntry.email}</strong> hasn't registered
+                    yet. Removing them just takes them off this list — they won't get admin access when they
+                    eventually do register.
+                  </>
+                )}
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setRemoveConfirmEntry(null)}
+                  disabled={removingAdminEmail}
+                  className="rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-40"
+                  style={{ background: "var(--surface-alt)", color: "var(--text)" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmRemoveAdminEmail}
+                  disabled={removingAdminEmail}
+                  className="rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-40"
+                  style={{ background: "var(--danger)", color: "white" }}
+                >
+                  {removingAdminEmail ? "Removing…" : removeConfirmEntry.status === "admin" ? "Revoke Access" : "Remove"}
+                </button>
+              </div>
+            </Modal>
           )}
         </div>
 

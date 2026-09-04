@@ -35,6 +35,7 @@ _env_defaults = {
     "media_root": os.environ.get("ROSTY_MEDIA_ROOT", DEFAULT_MEDIA_ROOT),
     "server_host": os.environ.get("ROSTY_HOST", DEFAULT_HOST),
     "server_port": os.environ.get("ROSTY_PORT", DEFAULT_PORT),
+    "admin_emails": os.environ.get("ADMIN_EMAILS", ""),
 }
 
 
@@ -111,6 +112,18 @@ class StorageConfig:
     @property
     def server_port(self) -> int:
         return int(self.get("server_port", DEFAULT_PORT) or DEFAULT_PORT)
+
+    @property
+    def admin_emails(self) -> list[str]:
+        """Emails that get role=admin the first time they log in — see
+        app/auth/deps.py. Only affects accounts that haven't registered yet;
+        editing this list never retroactively promotes/demotes an existing
+        account (see app/routers/admin_emails.py for why)."""
+        raw = self.get("admin_emails", "") or ""
+        return sorted({e.strip().lower() for e in raw.split(",") if e.strip()})
+
+    def set_admin_emails(self, emails: list[str]) -> None:
+        self.set("admin_emails", ",".join(sorted({e.strip().lower() for e in emails if e.strip()})))
 
 
 def ensure_data_dirs() -> None:

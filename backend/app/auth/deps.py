@@ -1,10 +1,9 @@
-import os
-
 from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.auth.security import decode_auth_access_token, fetch_auth_email
+from app.config import StorageConfig
 from app.database import get_db
 from app.models import Profile, User
 
@@ -17,11 +16,10 @@ bearer_scheme = HTTPBearer(auto_error=False)
 ADMIN_DEFAULT_AVATAR_KEY = "robot"
 
 
-def _is_admin_email(email: str | None) -> bool:
+def _is_admin_email(db: Session, email: str | None) -> bool:
     if not email:
         return False
-    allowlist = {e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "").split(",") if e.strip()}
-    return email.strip().lower() in allowlist
+    return email.strip().lower() in StorageConfig(db).admin_emails
 
 
 def get_current_user(
@@ -38,18 +36,26 @@ def get_current_user(
     user = db.query(User).filter(User.auth_subject == subject).one_or_none()
     if user is None:
         # First time this Auth account has been seen here — provision a local
-        # row. Role is decided once, now, against ADMIN_EMAILS: changing that
-        # list later doesn't retroactively promote/demote an already-provisioned
-        # account (deleting and re-registering the account re-syncs it).
+        # row. Role is decided once, now, against the admin allowlist: editing
+        # that list by itself never retroactively changes an already-provisioned
+        # account's role — only the explicit promote/demote actions in
+        # app/routers/admin_emails.py do that (deleting and re-registering the
+        # account would also re-sync it against the list, same as before).
         # username has no meaning of its own once Auth owns identity; the Auth
         # subject id is unique and doubles as one.
         email = fetch_auth_email(credentials.credentials)
-        role = "admin" if _is_admin_email(email) else "user"
+        cfg = StorageConfig(db)
+        role = "admin" if _is_admin_email(db, email) else "user"
         user = User(username=subject, password_hash="", role=role, auth_subject=subject, email=email)
         db.add(user)
         db.flush()
         if role == "admin":
             db.add(Profile(user_id=user.id, name="Admin", avatar_key=ADMIN_DEFAULT_AVATAR_KEY))
+            # Clears the now-fulfilled allowlist entry so Settings > Admin
+            # Access doesn't keep showing this email as "pending" once
+            # they're already a real, provisioned admin.
+            if email and email.strip().lower() in cfg.admin_emails:
+                cfg.set_admin_emails([e for e in cfg.admin_emails if e != email.strip().lower()])
         db.commit()
         db.refresh(user)
     elif user.role == "admin" and db.query(Profile).filter(Profile.user_id == user.id).first() is None:

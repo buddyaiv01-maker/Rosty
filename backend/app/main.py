@@ -11,12 +11,14 @@ from app.database import SessionLocal
 from app.models import DEFAULT_USER_ID, User
 from app.routers import (
     account,
+    admin_emails,
     events,
     hero,
     media,
     movies,
     playback,
     profiles,
+    rate_limit_config,
     scan,
     streaming,
     subtitles,
@@ -108,3 +110,7 @@ app.include_router(watchlist.router, prefix="/api")
 app.include_router(events.router, prefix="/api")
 app.include_router(account.router, prefix="/api", dependencies=auth_dep)
 app.include_router(profiles.router, prefix="/api", dependencies=auth_dep)
+# Both have their own require_admin baked into the router itself (see
+# admin_emails.py / rate_limit_config.py) — not repeated here.
+app.include_router(admin_emails.router, prefix="/api")
+app.include_router(rate_limit_config.router, prefix="/api")

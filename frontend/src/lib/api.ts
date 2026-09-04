@@ -710,6 +710,98 @@ export async function updateSettings(patch: Partial<Settings>): Promise<Settings
   return { mediaRoot: dto.media_root, serverHost: dto.server_host, serverPort: dto.server_port };
 }
 
+// ---- Rate limiting ----
+
+export type RateLimitThreshold = { maxRequests: number; windowSeconds: number };
+export type RateLimitConfig = { login: RateLimitThreshold; registration: RateLimitThreshold };
+
+type RateLimitThresholdDTO = { max_requests: number; window_seconds: number };
+type RateLimitConfigDTO = { login: RateLimitThresholdDTO; registration: RateLimitThresholdDTO };
+
+function rateLimitConfigFromDTO(dto: RateLimitConfigDTO): RateLimitConfig {
+  return {
+    login: { maxRequests: dto.login.max_requests, windowSeconds: dto.login.window_seconds },
+    registration: { maxRequests: dto.registration.max_requests, windowSeconds: dto.registration.window_seconds },
+  };
+}
+
+export async function getRateLimitConfig(): Promise<RateLimitConfig> {
+  const res = await fetch("/api/rate-limit-config");
+  return rateLimitConfigFromDTO(await json<RateLimitConfigDTO>(res));
+}
+
+export async function updateRateLimitConfig(patch: Partial<RateLimitConfig>): Promise<RateLimitConfig> {
+  const body: Partial<RateLimitConfigDTO> = {};
+  if (patch.login) body.login = { max_requests: patch.login.maxRequests, window_seconds: patch.login.windowSeconds };
+  if (patch.registration) {
+    body.registration = { max_requests: patch.registration.maxRequests, window_seconds: patch.registration.windowSeconds };
+  }
+  const res = await fetch("/api/rate-limit-config", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return rateLimitConfigFromDTO(await json<RateLimitConfigDTO>(res));
+}
+
+// ---- Service status ----
+
+export type ServiceStatus = {
+  backend: boolean;
+  authService: boolean;
+  authRestartHintDev: string;
+  authRestartHintSystemd: string;
+};
+
+type ServiceStatusDTO = {
+  backend: boolean;
+  auth_service: boolean;
+  auth_restart_hint_dev: string;
+  auth_restart_hint_systemd: string;
+};
+
+export async function getServiceStatus(): Promise<ServiceStatus> {
+  const res = await fetch("/api/service-status");
+  const dto = await json<ServiceStatusDTO>(res);
+  return {
+    backend: dto.backend,
+    authService: dto.auth_service,
+    authRestartHintDev: dto.auth_restart_hint_dev,
+    authRestartHintSystemd: dto.auth_restart_hint_systemd,
+  };
+}
+
+// ---- Admin allowlist ----
+
+export type AdminEmailStatus = "admin" | "pending";
+export type AdminEmailEntry = { email: string; status: AdminEmailStatus };
+
+type AdminEmailsDTO = { emails: AdminEmailEntry[] };
+
+export type AdminEmailAction = "added_to_allowlist" | "promoted" | "already_admin" | "removed_from_allowlist" | "demoted";
+export type AdminEmailActionResult = { action: AdminEmailAction; message: string; emails: AdminEmailEntry[] };
+
+type AdminEmailActionDTO = { action: AdminEmailAction; message: string; emails: AdminEmailEntry[] };
+
+export async function getAdminEmails(): Promise<AdminEmailEntry[]> {
+  const res = await fetch("/api/admin-emails");
+  return (await json<AdminEmailsDTO>(res)).emails;
+}
+
+export async function addAdminEmail(email: string): Promise<AdminEmailActionResult> {
+  const res = await fetch("/api/admin-emails", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  return json<AdminEmailActionDTO>(res);
+}
+
+export async function removeAdminEmail(email: string): Promise<AdminEmailActionResult> {
+  const res = await fetch(`/api/admin-emails/${encodeURIComponent(email)}`, { method: "DELETE" });
+  return json<AdminEmailActionDTO>(res);
+}
+
 export type DriveUsage = { path: string; totalBytes: number; usedBytes: number; freeBytes: number };
 export type DiskUsage = { media: DriveUsage; appData: DriveUsage };
 
