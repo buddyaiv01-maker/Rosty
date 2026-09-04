@@ -28,6 +28,9 @@ dist-ssr/
 backend/data/
 backend/media/
 
+# Dev-session debug logs — not read by the app, not useful history
+*.log
+
 # OS / editor
 .DS_Store
 Thumbs.db
