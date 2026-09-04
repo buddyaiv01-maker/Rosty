@@ -146,7 +146,15 @@ export default function Home() {
           </AnimatePresence>
 
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, var(--r-bg) 8%, rgba(0,0,0,0.15) 45%, transparent 70%)" }} />
+            {/* Was too weak (0.15 alpha) by the 45% mark, right where the
+            synopsis text sits — legible on a dark backdrop but not against a
+            bright one (e.g. Interstellar's wormhole shot), since the text has
+            no shadow/outline of its own to fall back on. Darker through the
+            same span the text actually occupies, only fading out after. */}
+            <div
+              className="absolute inset-0"
+              style={{ background: "linear-gradient(90deg, var(--r-bg) 15%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.15) 65%, transparent 80%)" }}
+            />
             <div className="absolute inset-0" style={{ background: "linear-gradient(0deg, var(--r-bg) 2%, transparent 45%)" }} />
             {/* A plain two-stop fade (opaque -> transparent) reads as a hard edge
             right around where it finishes, because the eye is much more
